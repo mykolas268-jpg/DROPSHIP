@@ -80,7 +80,7 @@
           {%- if q > 0 -%}
             {%- unless first_tier %},{% endunless -%}
             {%- assign first_tier = false -%}
-            {"index": {{ forloop.index0 }}, "qty": {{ q }}, "discount": {{ disc }}, "label": {{ settings[k_label] | json }}, "badge": {{ settings[k_badge] | json }}}
+            {"index": {{ forloop.index0 }}, "qty": {{ q }}, "discount": {{ disc }}, "label": {{ settings[k_label] | default: '' | json }}, "badge": {{ settings[k_badge] | default: '' | json }}}
           {%- endif -%}
         {%- endfor -%}
       ],
@@ -97,12 +97,12 @@
         {%- endfor -%}
       ],
       "strings": {
-        "each": {{ settings.op_text_each | json }},
-        "save": {{ settings.op_text_save | json }},
-        "atc": {{ settings.op_text_atc | json }},
-        "soldOut": {{ settings.op_text_sold_out | json }},
-        "adding": {{ settings.op_text_adding | json }},
-        "error": {{ settings.op_text_error | json }}
+        "each": {{ settings.op_text_each | default: '' | json }},
+        "save": {{ settings.op_text_save | default: '' | json }},
+        "atc": {{ settings.op_text_atc | default: '' | json }},
+        "soldOut": {{ settings.op_text_sold_out | default: '' | json }},
+        "adding": {{ settings.op_text_adding | default: '' | json }},
+        "error": {{ settings.op_text_error | default: '' | json }}
       }
     }
   </script>

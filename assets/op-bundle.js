@@ -147,7 +147,8 @@
           headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
           body: JSON.stringify(body),
         });
-        const json = await response.json();
+        // A non-JSON error page must never leak a parser message to the shopper.
+        const json = await response.json().catch(() => ({ status: response.status }));
         if (!response.ok || json.status) throw new Error(json.description || json.message || '');
 
         if (deferred) {
@@ -309,7 +310,8 @@
       if (this.ready) return;
       this.ready = true;
       const visible = new Set();
-      const targets = document.querySelectorAll('op-bundle [data-op-atc], op-bundle .op-tiers');
+      // Visible whenever no in-page add-to-cart button is on screen (including on first load).
+      const targets = document.querySelectorAll('op-bundle [data-op-atc]');
       if (!targets.length) return;
 
       this.observer = new IntersectionObserver((entries) => {

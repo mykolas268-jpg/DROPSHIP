@@ -11,6 +11,12 @@
   --op-sticky-h: 7.2rem;
 }
 
+.op-bundle [hidden],
+.op-delivery [hidden],
+op-sticky-atc [hidden] {
+  display: none !important;
+}
+
 .op-label {
   font-size: 1.4rem;
   font-weight: 700;
@@ -183,9 +189,9 @@
   align-items: center;
   justify-content: center;
   width: var(--op-tap);
-  height: 3.2rem;
+  height: var(--op-tap);
   padding: 0;
-  margin: 0 -1rem;
+  margin: 0;
   background: none;
   border: 0;
   cursor: pointer;

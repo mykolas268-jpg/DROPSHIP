@@ -39,8 +39,9 @@
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify(body),
       });
-      const json = await response.json();
-      if (!response.ok || json.status || json.errors) throw new Error(json.description || json.errors || '');
+      // A non-JSON error page must never leak a parser message to the shopper.
+      const json = await response.json().catch(() => ({ status: response.status }));
+      if (!response.ok || json.status || json.errors) throw new Error(json.description || (typeof json.errors === 'string' ? json.errors : '') || '');
       if (deferred) {
         fetch(`${window.routes.cart_url}.js`)
           .then((r) => r.json())
