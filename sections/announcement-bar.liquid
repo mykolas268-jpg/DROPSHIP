@@ -12,7 +12,20 @@
   if section.blocks.size > 0
     assign announcement_bar = true
   endif
+  comment
+    OP: render nothing when every announcement is empty (no blank colored strip above the fold).
+  endcomment
+  assign op_has_content = false
+  for block in section.blocks
+    if block.settings.text != blank
+      assign op_has_content = true
+    endif
+  endfor
+  if language_country_selector or section.settings.show_social and social_icons
+    assign op_has_content = true
+  endif
 -%}
+{%- if op_has_content -%}
 
 {% if social_icons %}
   {{ 'component-list-social.css' | asset_url | stylesheet_tag }}
@@ -161,6 +174,7 @@
     </div>
   </div>
 </div>
+{%- endif -%}
 
 {% schema %}
 {

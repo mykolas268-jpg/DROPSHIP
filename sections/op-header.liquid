@@ -1,0 +1,62 @@
+{% comment %}
+  Minimal header for a one-product store: logo + cart icon only.
+  Logo image/width come from Theme settings → Logo. The cart icon opens Dawn's cart drawer (#cart-icon-bubble).
+{% endcomment %}
+{{ 'op.css' | asset_url | stylesheet_tag }}
+
+<header class="op-header color-{{ section.settings.color_scheme }} gradient{% if section.settings.logo_center %} op-header--center{% endif %}">
+  <div class="page-width op-header__inner">
+    {%- if section.settings.logo_center -%}
+      <span class="op-header__spacer" aria-hidden="true"></span>
+    {%- endif -%}
+    <a href="{{ routes.root_url }}" class="op-header__logo">
+      {%- if settings.logo != blank -%}
+        {%- assign logo_height = settings.logo_width | divided_by: settings.logo.aspect_ratio | round -%}
+        {{
+          settings.logo
+          | image_url: width: 600
+          | image_tag:
+            class: 'op-header__logo-img',
+            widths: '150, 200, 300, 450, 600',
+            height: logo_height,
+            width: settings.logo_width,
+            alt: shop.name,
+            sizes: '(min-width: 750px) 300px, 200px'
+        }}
+      {%- else -%}
+        <span class="op-header__name h3">{{ shop.name | escape }}</span>
+      {%- endif -%}
+    </a>
+    <a href="{{ routes.cart_url }}" class="header__icon header__icon--cart op-header__cart link focus-inset" id="cart-icon-bubble">
+      {% if cart == empty %}
+        <span class="svg-wrapper">{{ 'icon-cart-empty.svg' | inline_asset_content }}</span>
+      {% else %}
+        <span class="svg-wrapper">{{ 'icon-cart.svg' | inline_asset_content }}</span>
+      {% endif %}
+      <span class="visually-hidden">{{ 'templates.cart.cart' | t }}</span>
+      {%- if cart != empty -%}
+        <div class="cart-count-bubble">
+          {%- if cart.item_count < 100 -%}
+            <span aria-hidden="true">{{ cart.item_count }}</span>
+          {%- endif -%}
+          <span class="visually-hidden">{{ 'sections.header.cart_count' | t: count: cart.item_count }}</span>
+        </div>
+      {%- endif -%}
+    </a>
+  </div>
+</header>
+
+{% schema %}
+{
+  "name": "OP · Header",
+  "tag": "div",
+  "class": "section-header",
+  "enabled_on": { "groups": ["header"] },
+  "settings": [
+    { "type": "paragraph", "content": "Logo image and width: Theme settings → Logo." },
+    { "type": "checkbox", "id": "logo_center", "label": "Center logo", "default": true },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Color scheme", "default": "scheme-1" }
+  ],
+  "presets": [{ "name": "OP · Header" }]
+}
+{% endschema %}

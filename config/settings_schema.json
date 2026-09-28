@@ -1466,5 +1466,384 @@
         "label": "t:settings_schema.customer_accounts.settings.customer_account_menu.label"
       }
     ]
+  },
+  {
+    "name": "OP · Product & bundles",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "Single source for the bundle prices shown on the product page, final CTA, sticky bar and cart. The discount amounts here MUST equal your Shopify automatic discounts (see README → Discount setup). The cart always shows Shopify's real totals."
+      },
+      {
+        "type": "product",
+        "id": "op_product",
+        "label": "Store product",
+        "info": "Used on the homepage and anywhere there is no product in context."
+      },
+      {
+        "type": "text",
+        "id": "op_color_option_name",
+        "label": "Color option name",
+        "default": "Color",
+        "info": "Must match the option name in Shopify admin."
+      },
+      {
+        "type": "header",
+        "content": "Tier 1"
+      },
+      {
+        "type": "number",
+        "id": "op_tier1_qty",
+        "label": "Masks",
+        "default": 1
+      },
+      {
+        "type": "text",
+        "id": "op_tier1_label",
+        "label": "Label",
+        "default": "1 mask"
+      },
+      {
+        "type": "text",
+        "id": "op_tier1_badge",
+        "label": "Badge"
+      },
+      {
+        "type": "header",
+        "content": "Tier 2"
+      },
+      {
+        "type": "number",
+        "id": "op_tier2_qty",
+        "label": "Masks",
+        "default": 2
+      },
+      {
+        "type": "text",
+        "id": "op_tier2_label",
+        "label": "Label",
+        "default": "2 masks"
+      },
+      {
+        "type": "text",
+        "id": "op_tier2_badge",
+        "label": "Badge",
+        "default": "Best for pairs",
+        "info": "Only claim \"Most popular\" once your sales data shows it."
+      },
+      {
+        "type": "number",
+        "id": "op_tier2_discount",
+        "label": "Discount per mask, in cents",
+        "info": "500 = $5.00 off EACH mask. Must equal the Shopify automatic discount for this quantity. Empty = no discount."
+      },
+      {
+        "type": "header",
+        "content": "Tier 3"
+      },
+      {
+        "type": "number",
+        "id": "op_tier3_qty",
+        "label": "Masks",
+        "default": 4
+      },
+      {
+        "type": "text",
+        "id": "op_tier3_label",
+        "label": "Label",
+        "default": "4 masks"
+      },
+      {
+        "type": "text",
+        "id": "op_tier3_badge",
+        "label": "Badge",
+        "default": "Squad pack"
+      },
+      {
+        "type": "number",
+        "id": "op_tier3_discount",
+        "label": "Discount per mask, in cents",
+        "info": "Must equal the Shopify automatic discount for this quantity."
+      },
+      {
+        "type": "header",
+        "content": "Behaviour"
+      },
+      {
+        "type": "select",
+        "id": "op_default_tier",
+        "label": "Preselected tier",
+        "default": "2",
+        "options": [
+          {
+            "value": "1",
+            "label": "Tier 1"
+          },
+          {
+            "value": "2",
+            "label": "Tier 2"
+          },
+          {
+            "value": "3",
+            "label": "Tier 3"
+          }
+        ]
+      },
+      {
+        "type": "checkbox",
+        "id": "op_show_compare_at",
+        "label": "Show compare-at (strike-through) price",
+        "default": false,
+        "info": "Only enable if the product's compare-at price is a real price you previously charged."
+      },
+      {
+        "type": "header",
+        "content": "Selector text"
+      },
+      {
+        "type": "paragraph",
+        "content": "Tokens: [price] [amount] [qty] [n]"
+      },
+      {
+        "type": "text",
+        "id": "op_text_tiers_legend",
+        "label": "Tier picker heading",
+        "default": "Choose your pack"
+      },
+      {
+        "type": "text",
+        "id": "op_text_each",
+        "label": "Per-mask price",
+        "default": "[price] each"
+      },
+      {
+        "type": "text",
+        "id": "op_text_save",
+        "label": "Savings",
+        "default": "Save [amount]"
+      },
+      {
+        "type": "text",
+        "id": "op_text_color",
+        "label": "Color heading",
+        "default": "Color"
+      },
+      {
+        "type": "text",
+        "id": "op_text_mix",
+        "label": "Mix colors button",
+        "default": "Pick a different color for each mask"
+      },
+      {
+        "type": "text",
+        "id": "op_text_unit",
+        "label": "Per-mask color label",
+        "default": "Mask [n]"
+      },
+      {
+        "type": "text",
+        "id": "op_text_atc",
+        "label": "Add to cart button",
+        "default": "Add to cart"
+      },
+      {
+        "type": "text",
+        "id": "op_text_sold_out",
+        "label": "Sold out",
+        "default": "Sold out"
+      },
+      {
+        "type": "text",
+        "id": "op_text_adding",
+        "label": "Adding…",
+        "default": "Adding…"
+      },
+      {
+        "type": "text",
+        "id": "op_text_error",
+        "label": "Add to cart error",
+        "default": "Something went wrong. Please try again."
+      }
+    ]
+  },
+  {
+    "name": "OP · Delivery estimate",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "Leave the day fields empty to hide the estimate. All days are business days (Mon–Fri, minus the non-shipping dates below). Use your real worst case, not the supplier's best case."
+      },
+      {
+        "type": "number",
+        "id": "op_processing_min",
+        "label": "Processing time — min business days"
+      },
+      {
+        "type": "number",
+        "id": "op_processing_max",
+        "label": "Processing time — max business days"
+      },
+      {
+        "type": "number",
+        "id": "op_transit_min",
+        "label": "Transit to customer — min business days"
+      },
+      {
+        "type": "number",
+        "id": "op_transit_max",
+        "label": "Transit to customer — max business days"
+      },
+      {
+        "type": "number",
+        "id": "op_cutoff_hour",
+        "label": "Daily order cutoff hour (0–23)",
+        "info": "Orders after this hour count as next business day. Empty = no cutoff."
+      },
+      {
+        "type": "text",
+        "id": "op_cutoff_timezone",
+        "label": "Cutoff time zone",
+        "info": "IANA name, e.g. America/New_York. Empty = visitor's own time zone."
+      },
+      {
+        "type": "textarea",
+        "id": "op_blocked_dates",
+        "label": "Non-shipping dates",
+        "info": "YYYY-MM-DD, separated by commas or new lines (holidays)."
+      },
+      {
+        "type": "text",
+        "id": "op_delivery_text",
+        "label": "Estimate text",
+        "default": "Order today → arrives [dates]",
+        "info": "[dates] = date range"
+      },
+      {
+        "type": "header",
+        "content": "Event banner (the only urgency element)"
+      },
+      {
+        "type": "paragraph",
+        "content": "Shows \"order by\" only while an order placed today still arrives BEFORE the event date in the worst case. Hides itself automatically after the cutoff."
+      },
+      {
+        "type": "text",
+        "id": "op_event_name",
+        "label": "Event name",
+        "info": "e.g. Halloween"
+      },
+      {
+        "type": "text",
+        "id": "op_event_date",
+        "label": "Event date",
+        "info": "YYYY-MM-DD, e.g. 2026-10-31"
+      },
+      {
+        "type": "text",
+        "id": "op_event_text",
+        "label": "Banner text",
+        "default": "Order by [cutoff] to get it before [event]"
+      }
+    ]
+  },
+  {
+    "name": "OP · Cart drawer",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "Set Cart → Cart type to \"Drawer\" for these features."
+      },
+      {
+        "type": "number",
+        "id": "op_free_shipping_threshold",
+        "label": "Free shipping threshold, in cents",
+        "info": "Must equal the free shipping rate condition in Settings → Shipping. Empty = hide the bar."
+      },
+      {
+        "type": "text",
+        "id": "op_text_free_ship_progress",
+        "label": "Progress text",
+        "default": "You're [amount] away from free shipping"
+      },
+      {
+        "type": "text",
+        "id": "op_text_free_ship_done",
+        "label": "Unlocked text",
+        "default": "You've unlocked free shipping"
+      },
+      {
+        "type": "checkbox",
+        "id": "op_show_upgrade",
+        "label": "Show 1 → 2 mask upgrade nudge",
+        "default": true
+      },
+      {
+        "type": "text",
+        "id": "op_text_upgrade",
+        "label": "Upgrade text",
+        "default": "Add a 2nd for [price] more — save [amount]",
+        "info": "[price] = extra cost, [amount] = savings. Savings part is removed automatically if tier 2 has no discount."
+      },
+      {
+        "type": "text",
+        "id": "op_text_upgrade_button",
+        "label": "Upgrade button",
+        "default": "Make it 2"
+      },
+      {
+        "type": "product",
+        "id": "op_upsell_product",
+        "label": "Add-on upsell product",
+        "info": "Hidden when already in the cart. Use a product with one variant."
+      },
+      {
+        "type": "text",
+        "id": "op_text_upsell_heading",
+        "label": "Upsell heading",
+        "default": "Add to your order"
+      },
+      {
+        "type": "text",
+        "id": "op_text_upsell_button",
+        "label": "Upsell button",
+        "default": "Add"
+      },
+      {
+        "type": "text",
+        "id": "op_text_savings",
+        "label": "Savings line",
+        "default": "You save [amount]"
+      },
+      {
+        "type": "checkbox",
+        "id": "op_show_dynamic_checkout",
+        "label": "Show Shop Pay / Apple Pay / Google Pay buttons",
+        "default": true
+      }
+    ]
+  },
+  {
+    "name": "OP · Business info",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "Shown in the footer. Leave empty to hide a line."
+      },
+      {
+        "type": "text",
+        "id": "op_business_name",
+        "label": "Legal business name"
+      },
+      {
+        "type": "textarea",
+        "id": "op_business_address",
+        "label": "Business address"
+      },
+      {
+        "type": "text",
+        "id": "op_support_email",
+        "label": "Support email"
+      }
+    ]
   }
 ]

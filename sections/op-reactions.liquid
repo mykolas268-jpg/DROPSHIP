@@ -1,0 +1,128 @@
+{% comment %}
+  "The reaction" — UGC photos / videos of the mask worn in real situations.
+  Only use content you own or have written permission to use.
+{% endcomment %}
+{{ 'op.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'op-media.js' | asset_url }}" defer="defer"></script>
+
+{%- liquid
+  assign has_media = false
+  for block in section.blocks
+    if block.settings.video != blank or block.settings.image != blank
+      assign has_media = true
+    endif
+  endfor
+-%}
+{%- if has_media or request.design_mode -%}
+  <section class="op-section op-reactions color-{{ section.settings.color_scheme }} gradient">
+    <div class="page-width">
+      {%- if section.settings.heading != blank -%}
+        <h2 class="op-section__heading h2">{{ section.settings.heading | escape }}</h2>
+      {%- endif -%}
+      {%- if section.settings.subheading != blank -%}
+        <p class="op-section__sub">{{ section.settings.subheading | escape }}</p>
+      {%- endif -%}
+      <op-autoplay>
+        <ul
+          class="op-reactions__list op-reactions__list--{{ section.settings.layout }} list-unstyled"
+          {% if section.settings.layout == 'carousel' %}
+            tabindex="0" role="region" aria-label="{{ section.settings.heading | escape }}"
+          {% endif %}
+        >
+          {%- for block in section.blocks -%}
+            {%- if block.settings.video == blank and block.settings.image == blank and request.design_mode == false -%}
+              {%- continue -%}
+            {%- endif -%}
+            <li class="op-reactions__item" {{ block.shopify_attributes }} data-op-track="ugc_item">
+              <figure class="op-reactions__figure">
+                <div class="op-reactions__media">
+                  {%- if block.type == 'video' and block.settings.video != blank -%}
+                    <div data-op-autoplay>
+                      {{
+                        block.settings.video
+                        | video_tag:
+                          image_size: '720x',
+                          autoplay: false,
+                          loop: true,
+                          muted: true,
+                          playsinline: true,
+                          controls: false,
+                          preload: 'none'
+                      }}
+                    </div>
+                  {%- elsif block.type == 'image' and block.settings.image != blank -%}
+                    {{
+                      block.settings.image
+                      | image_url: width: 900
+                      | image_tag:
+                        widths: '300, 450, 600, 900',
+                        sizes: '(min-width: 990px) 25vw, 50vw',
+                        loading: 'lazy',
+                        alt: block.settings.image.alt
+                    }}
+                  {%- else -%}
+                    {{ 'lifestyle-1' | placeholder_svg_tag: 'placeholder-svg' }}
+                  {%- endif -%}
+                </div>
+                {%- if block.settings.caption != blank -%}
+                  <figcaption class="op-reactions__caption">{{ block.settings.caption | escape }}</figcaption>
+                {%- endif -%}
+              </figure>
+            </li>
+          {%- endfor -%}
+        </ul>
+      </op-autoplay>
+    </div>
+  </section>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "OP · The reaction (UGC)",
+  "tag": "div",
+  "class": "section",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Heading", "default": "The reaction" },
+    { "type": "text", "id": "subheading", "label": "Subheading", "default": "What happens when you walk in wearing one." },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Layout on phones",
+      "default": "carousel",
+      "options": [
+        { "value": "carousel", "label": "Swipe carousel" },
+        { "value": "grid", "label": "2-column grid" }
+      ]
+    },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Color scheme", "default": "scheme-1" },
+    {
+      "type": "paragraph",
+      "content": "Upload videos/photos in Content → Files, then pick them in the blocks. Use only content you own or have permission to use. Videos play muted only while on screen and never preload."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "video",
+      "name": "Video",
+      "settings": [
+        { "type": "video", "id": "video", "label": "Video" },
+        { "type": "text", "id": "caption", "label": "Caption" }
+      ]
+    },
+    {
+      "type": "image",
+      "name": "Photo",
+      "settings": [
+        { "type": "image_picker", "id": "image", "label": "Photo" },
+        { "type": "text", "id": "caption", "label": "Caption" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "OP · The reaction (UGC)",
+      "blocks": [{ "type": "video" }, { "type": "video" }, { "type": "image" }, { "type": "image" }]
+    }
+  ]
+}
+{% endschema %}

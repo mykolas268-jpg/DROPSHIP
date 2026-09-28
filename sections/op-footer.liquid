@@ -1,0 +1,75 @@
+{% comment %}
+  Footer: Shopify policy links (Settings → Policies), contact email, business name and address.
+  Business info: Theme settings → OP · Business info.
+{% endcomment %}
+{{ 'op.css' | asset_url | stylesheet_tag }}
+
+<footer class="op-footer color-{{ section.settings.color_scheme }} gradient">
+  <div class="page-width op-footer__inner">
+    {%- if section.settings.text != blank -%}
+      <div class="op-footer__text rte">{{ section.settings.text }}</div>
+    {%- endif -%}
+
+    <nav aria-label="{{ section.settings.policies_label | escape }}">
+      <ul class="op-footer__links list-unstyled">
+        {%- for policy in shop.policies -%}
+          {%- if policy != blank -%}
+            <li><a href="{{ policy.url }}" class="link">{{ policy.title | escape }}</a></li>
+          {%- endif -%}
+        {%- endfor -%}
+        {%- if section.settings.contact_page != blank -%}
+          <li><a href="{{ section.settings.contact_page.url }}" class="link">{{ section.settings.contact_page.title | escape }}</a></li>
+        {%- endif -%}
+      </ul>
+    </nav>
+
+    {%- if settings.op_support_email != blank or settings.op_business_name != blank or settings.op_business_address != blank -%}
+      <address class="op-footer__contact">
+        {%- if settings.op_support_email != blank -%}
+          <a href="mailto:{{ settings.op_support_email | strip | escape }}" class="link op-footer__email">
+            {% render 'op-icon', icon: 'mail', size: 18 %}
+            {{ settings.op_support_email | strip | escape }}
+          </a>
+        {%- endif -%}
+        {%- if settings.op_business_name != blank -%}
+          <span>{{ settings.op_business_name | escape }}</span>
+        {%- endif -%}
+        {%- if settings.op_business_address != blank -%}
+          <span>{{ settings.op_business_address | escape | newline_to_br }}</span>
+        {%- endif -%}
+      </address>
+    {%- endif -%}
+
+    {%- if section.settings.show_payment_icons and shop.enabled_payment_types.size > 0 -%}
+      <ul class="op-footer__payments list-unstyled" role="list">
+        <li class="visually-hidden">{{ 'sections.footer.payment' | t }}</li>
+        {%- for type in shop.enabled_payment_types -%}
+          <li>{{ type | payment_type_svg_tag: class: 'icon icon--full-color' }}</li>
+        {%- endfor -%}
+      </ul>
+    {%- endif -%}
+
+    <p class="op-footer__copy">&copy; {{ 'now' | date: '%Y' }} {{ settings.op_business_name | default: shop.name | escape }}</p>
+  </div>
+</footer>
+
+{% schema %}
+{
+  "name": "OP · Footer",
+  "tag": "div",
+  "class": "section-footer",
+  "enabled_on": { "groups": ["footer"] },
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Policy links come from Settings → Policies (refund, shipping, privacy, terms, contact). Fill all of them. Business name/address/email: Theme settings → OP · Business info."
+    },
+    { "type": "richtext", "id": "text", "label": "Short text (optional)" },
+    { "type": "page", "id": "contact_page", "label": "Contact page (optional)" },
+    { "type": "text", "id": "policies_label", "label": "Links label (screen readers)", "default": "Policies" },
+    { "type": "checkbox", "id": "show_payment_icons", "label": "Show payment icons", "default": true },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Color scheme", "default": "scheme-1" }
+  ],
+  "presets": [{ "name": "OP · Footer" }]
+}
+{% endschema %}

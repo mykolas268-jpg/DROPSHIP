@@ -1,0 +1,139 @@
+{% comment %}
+  Cart drawer add-ons for the one-product store. Rendered inside snippets/cart-drawer.liquid, so they
+  re-render with the drawer after every cart change and always reflect Shopify's real cart numbers.
+
+  Accepts:
+  - part: 'shipping' | 'offers' | 'savings' | 'checkout'
+
+  Usage: {% render 'op-cart-extras', part: 'shipping' %}
+{% endcomment %}
+{%- case part -%}
+  {%- when 'shipping' -%}
+    {%- assign threshold = settings.op_free_shipping_threshold | plus: 0 -%}
+    {%- if threshold > 0 and cart != empty -%}
+      {%- liquid
+        assign remaining = threshold | minus: cart.total_price
+        assign progress = cart.total_price | times: 100 | divided_by: threshold | at_most: 100
+        assign remaining_money = remaining | money
+      -%}
+      <div class="op-ship{% if remaining <= 0 %} is-done{% endif %}">
+        <p class="op-ship__text">
+          {%- if remaining > 0 -%}
+            {{ settings.op_text_free_ship_progress | replace: '[amount]', remaining_money | escape }}
+          {%- else -%}
+            {{ settings.op_text_free_ship_done | escape }}
+          {%- endif -%}
+        </p>
+        <div
+          class="op-ship__bar"
+          role="progressbar"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          aria-valuenow="{{ progress }}"
+          aria-label="{{ settings.op_text_free_ship_done | escape }}"
+        >
+          <span style="width: {{ progress }}%;"></span>
+        </div>
+      </div>
+    {%- endif -%}
+
+  {%- when 'offers' -%}
+    {%- liquid
+      assign mask = settings.op_product
+      assign mask_qty = 0
+      assign mask_line = 0
+      assign mask_item = null
+      assign upsell_in_cart = false
+      for item in cart.items
+        if mask and item.product_id == mask.id
+          assign mask_qty = mask_qty | plus: item.quantity
+          assign mask_line = forloop.index
+          assign mask_item = item
+        endif
+        if settings.op_upsell_product and item.product_id == settings.op_upsell_product.id
+          assign upsell_in_cart = true
+        endif
+      endfor
+      assign target_qty = settings.op_tier2_qty | plus: 0
+    -%}
+    {%- if settings.op_show_upgrade and mask_qty == 1 and target_qty > 1 and mask_item.variant.available -%}
+      {%- liquid
+        assign unit = mask_item.original_price
+        assign disc = settings.op_tier2_discount | plus: 0 | at_least: 0 | at_most: unit
+        assign target_total = unit | minus: disc | times: target_qty
+        assign extra = target_total | minus: unit
+        assign savings = disc | times: target_qty
+        assign extra_money = extra | money
+        assign savings_money = savings | money
+        assign text = settings.op_text_upgrade | replace: '[price]', extra_money
+        if savings > 0
+          assign text = text | replace: '[amount]', savings_money
+        else
+          assign text = text | split: ' — ' | first | split: ' - ' | first
+        endif
+      -%}
+      <div class="op-upgrade">
+        <p class="op-upgrade__text">{{ text | escape }}</p>
+        <button
+          type="button"
+          class="button button--secondary op-upgrade__btn"
+          data-op-cart-action="upgrade"
+          data-line="{{ mask_line }}"
+          data-line-key="{{ mask_item.key }}"
+          data-quantity="{{ target_qty }}"
+          data-op-track="cart_upgrade"
+          data-op-tier="2"
+        >
+          {{ settings.op_text_upgrade_button | escape }}
+        </button>
+      </div>
+    {%- endif -%}
+
+    {%- assign upsell = settings.op_upsell_product -%}
+    {%- if upsell and upsell.available and upsell_in_cart == false and cart != empty -%}
+      {%- assign upsell_variant = upsell.selected_or_first_available_variant -%}
+      <div class="op-upsell">
+        <p class="op-upsell__heading">{{ settings.op_text_upsell_heading | escape }}</p>
+        <div class="op-upsell__card">
+          {%- if upsell.featured_image -%}
+            {{
+              upsell.featured_image
+              | image_url: width: 160, height: 160, crop: 'center'
+              | image_tag: loading: 'lazy', width: 64, height: 64, alt: '', class: 'op-upsell__img'
+            }}
+          {%- endif -%}
+          <div class="op-upsell__info">
+            <p class="op-upsell__title">{{ upsell.title | escape }}</p>
+            <p class="op-upsell__price">{{ upsell_variant.price | money }}</p>
+          </div>
+          <button
+            type="button"
+            class="button op-upsell__btn"
+            data-op-cart-action="add"
+            data-variant-id="{{ upsell_variant.id }}"
+            data-op-track="cart_upsell"
+            data-op-upsell="{{ upsell.handle }}"
+            aria-label="{{ settings.op_text_upsell_button | escape }}: {{ upsell.title | escape }}"
+          >
+            {{ settings.op_text_upsell_button | escape }}
+          </button>
+        </div>
+      </div>
+    {%- endif -%}
+
+  {%- when 'savings' -%}
+    {%- if cart.total_discount > 0 -%}
+      {%- assign saved_money = cart.total_discount | money -%}
+      <p class="op-savings">
+        {% render 'op-icon', icon: 'check', size: 18 %}
+        {{ settings.op_text_savings | replace: '[amount]', saved_money | escape }}
+      </p>
+    {%- endif -%}
+
+  {%- when 'checkout' -%}
+    {%- if settings.op_show_dynamic_checkout and additional_checkout_buttons and cart != empty -%}
+      <div class="op-cart-dcb additional-checkout-buttons additional-checkout-buttons--vertical">
+        {{ content_for_additional_checkout_buttons }}
+      </div>
+    {%- endif -%}
+{%- endcase -%}

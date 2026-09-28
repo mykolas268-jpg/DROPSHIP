@@ -1,0 +1,76 @@
+{% comment %}
+  Use cases: horizontally scrolling cards (Halloween / party / festival / ski trip / gift).
+{% endcomment %}
+{{ 'op.css' | asset_url | stylesheet_tag }}
+
+<section class="op-section op-uses color-{{ section.settings.color_scheme }} gradient">
+  <div class="page-width">
+    {%- if section.settings.heading != blank -%}
+      <h2 class="op-section__heading h2">{{ section.settings.heading | escape }}</h2>
+    {%- endif -%}
+  </div>
+  <ul
+    class="op-uses__list list-unstyled"
+    tabindex="0"
+    role="region"
+    aria-label="{{ section.settings.heading | escape }}"
+  >
+    {%- for block in section.blocks -%}
+      <li class="op-uses__card" {{ block.shopify_attributes }} data-op-track="use_case" data-op-use="{{ block.settings.title | handle }}">
+        <div class="op-uses__media">
+          {%- if block.settings.image != blank -%}
+            {{
+              block.settings.image
+              | image_url: width: 720
+              | image_tag: widths: '280, 420, 560, 720', sizes: '(min-width: 990px) 22vw, 70vw', loading: 'lazy', alt: block.settings.image.alt
+            }}
+          {%- else -%}
+            <span class="op-uses__icon">{% render 'op-icon', icon: block.settings.icon, size: 40 %}</span>
+          {%- endif -%}
+        </div>
+        <div class="op-uses__body">
+          <h3 class="op-uses__title">{{ block.settings.title | escape }}</h3>
+          {%- if block.settings.text != blank -%}
+            <p class="op-uses__text">{{ block.settings.text | escape }}</p>
+          {%- endif -%}
+        </div>
+      </li>
+    {%- endfor -%}
+  </ul>
+</section>
+
+{% schema %}
+{
+  "name": "OP · Use cases",
+  "tag": "div",
+  "class": "section",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Where it gets worn" },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Color scheme", "default": "scheme-1" }
+  ],
+  "blocks": [
+    {
+      "type": "card",
+      "name": "Card",
+      "settings": [
+        { "type": "image_picker", "id": "image", "label": "Image" },
+        { "type": "select", "id": "icon", "label": "Icon (used when no image)", "default": "party", "options": [{ "value": "laugh", "label": "Laugh" },{ "value": "camera", "label": "Camera" },{ "value": "users", "label": "Group" },{ "value": "gift", "label": "Gift" },{ "value": "snow", "label": "Snow" },{ "value": "party", "label": "Party" },{ "value": "mask", "label": "Mask" },{ "value": "heart", "label": "Heart" },{ "value": "star", "label": "Star" },{ "value": "check", "label": "Check" },{ "value": "truck", "label": "Truck" },{ "value": "lock", "label": "Lock" },{ "value": "shield", "label": "Shield" },{ "value": "return", "label": "Return" },{ "value": "clock", "label": "Clock" }] },
+        { "type": "text", "id": "title", "label": "Title", "default": "Title" },
+        { "type": "text", "id": "text", "label": "One line" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "OP · Use cases",
+      "blocks": [
+        { "type": "card", "settings": { "icon": "mask", "title": "Halloween", "text": "A costume that takes ten seconds to put on." } },
+        { "type": "card", "settings": { "icon": "party", "title": "Parties", "text": "Instant icebreaker. Guaranteed photos." } },
+        { "type": "card", "settings": { "icon": "users", "title": "Festivals", "text": "Easy to spot your crew in a crowd." } },
+        { "type": "card", "settings": { "icon": "snow", "title": "Ski trips", "text": "A thin layer under your helmet or hood for the lift-line laughs." } },
+        { "type": "card", "settings": { "icon": "gift", "title": "Gag gifts", "text": "The present everyone remembers opening." } }
+      ]
+    }
+  ]
+}
+{% endschema %}

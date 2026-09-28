@@ -1,0 +1,126 @@
+/* One-product store — cart drawer additions (free shipping bar, 1→2 upgrade, upsell, savings, express buttons). */
+
+.op-ship {
+  padding: 1rem 2rem 1.2rem;
+  border-bottom: 0.1rem solid rgba(var(--color-foreground), 0.08);
+}
+
+.op-ship__text {
+  margin: 0 0 0.6rem;
+  font-size: 1.4rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.op-ship__bar {
+  height: 0.8rem;
+  border-radius: 99rem;
+  background: rgba(var(--color-foreground), 0.12);
+  overflow: hidden;
+}
+
+.op-ship__bar span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: rgb(var(--color-foreground));
+  transition: width 0.3s ease;
+}
+
+.op-ship.is-done .op-ship__bar span {
+  background: rgb(21 128 61);
+}
+
+.op-upgrade {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.2rem;
+  margin: 1.2rem 0;
+  padding: 1.2rem 1.4rem;
+  border: 2px dashed rgba(var(--color-foreground), 0.35);
+  border-radius: 1.2rem;
+}
+
+.op-upgrade__text {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.op-upgrade__btn,
+.op-upsell__btn {
+  flex: none;
+  min-height: 4.4rem;
+  min-width: 8rem;
+  padding: 0 1.6rem;
+}
+
+.op-upsell {
+  margin: 1.2rem 0;
+}
+
+.op-upsell__heading {
+  margin: 0 0 0.6rem;
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.op-upsell__card {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  padding: 1rem;
+  border-radius: 1.2rem;
+  background: rgba(var(--color-foreground), 0.05);
+}
+
+.op-upsell__img {
+  width: 6.4rem;
+  height: 6.4rem;
+  object-fit: cover;
+  border-radius: 0.8rem;
+  flex: none;
+}
+
+.op-upsell__info {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.op-upsell__title,
+.op-upsell__price {
+  margin: 0;
+  font-size: 1.5rem;
+  line-height: 1.35;
+}
+
+.op-upsell__title {
+  font-weight: 600;
+}
+
+.op-savings {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  margin: 0 0 0.4rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: rgb(21 128 61);
+}
+
+.op-cart-dcb {
+  margin-top: 1rem;
+}
+
+.op-cart-dcb:empty {
+  display: none;
+}
+
+.op-upgrade__btn[aria-busy='true'],
+.op-upsell__btn[aria-busy='true'] {
+  cursor: progress;
+  opacity: 0.7;
+}

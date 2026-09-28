@@ -1,0 +1,70 @@
+{% comment %}
+  Delivery estimate + optional event cutoff banner (computed client side by assets/op-delivery.js).
+  Renders nothing until processing/transit days are filled in Theme settings → OP · Delivery estimate.
+
+  Accepts:
+  - block: the block (optional, for theme editor attributes and show_event)
+  - hide_event: true to never show the event banner (optional)
+
+  Usage: {% render 'op-delivery', block: block %}
+{% endcomment %}
+{%- liquid
+  assign max_days = settings.op_processing_max | default: settings.op_processing_min | plus: 0
+  assign transit = settings.op_transit_max | default: settings.op_transit_min | plus: 0
+  assign max_days = max_days | plus: transit
+
+  assign show_event = true
+  if block and block.settings.show_event == false
+    assign show_event = false
+  endif
+  if hide_event
+    assign show_event = false
+  endif
+  if settings.op_event_name == blank or settings.op_event_date == blank
+    assign show_event = false
+  endif
+
+  comment
+    Server-side pre-check so the banner space is reserved (no layout shift) only when it can plausibly show.
+    The browser makes the exact business-day decision and hides it after the cutoff.
+  endcomment
+  if show_event
+    assign now_ts = 'now' | date: '%s' | plus: 0
+    assign event_ts = settings.op_event_date | date: '%s' | plus: 0
+    assign needed = max_days | times: 86400
+    assign latest_ts = now_ts | plus: needed
+    if event_ts == 0 or latest_ts >= event_ts
+      assign show_event = false
+    endif
+  endif
+-%}
+{%- if max_days > 0 -%}
+  <op-delivery
+    class="op-delivery"
+    {% if block %}
+      {{ block.shopify_attributes }}
+    {% endif %}
+    data-processing-min="{{ settings.op_processing_min }}"
+    data-processing-max="{{ settings.op_processing_max }}"
+    data-transit-min="{{ settings.op_transit_min }}"
+    data-transit-max="{{ settings.op_transit_max }}"
+    data-cutoff-hour="{{ settings.op_cutoff_hour }}"
+    data-time-zone="{{ settings.op_cutoff_timezone | strip | escape }}"
+    data-blocked="{{ settings.op_blocked_dates | escape }}"
+    data-estimate-text="{{ settings.op_delivery_text | escape }}"
+    data-event-name="{{ settings.op_event_name | escape }}"
+    data-event-date="{{ settings.op_event_date | strip | escape }}"
+    data-event-text="{{ settings.op_event_text | escape }}"
+  >
+    <p class="op-delivery__line" data-op-estimate>
+      {% render 'op-icon', icon: 'truck', size: 20 %}
+      <span data-op-estimate-text>&nbsp;</span>
+    </p>
+    {%- if show_event -%}
+      <p class="op-event" data-op-event>
+        {% render 'op-icon', icon: 'clock', size: 20 %}
+        <span data-op-event-text>&nbsp;</span>
+      </p>
+    {%- endif -%}
+  </op-delivery>
+{%- endif -%}

@@ -1,0 +1,314 @@
+{% comment %}
+  Bundle selector (quantity breaks) + color picker (per mask) + add to cart.
+  Rendered in the main product section AND the final CTA; all instances share one state (assets/op-bundle.js).
+
+  Accepts:
+  - product: product object
+  - context: 'main' | 'final' (used for unique ids and analytics)
+  - section_id: section.id
+
+  Usage:
+  {% render 'op-buy-box', product: product, context: 'main', section_id: section.id %}
+{% endcomment %}
+{%- liquid
+  assign uid = section_id | append: '-' | append: context
+  assign variant = product.selected_or_first_available_variant
+  assign base = variant.price
+
+  assign show_compare = false
+  if settings.op_show_compare_at and variant.compare_at_price > variant.price
+    assign show_compare = true
+  endif
+
+  assign default_index = settings.op_default_tier | plus: 0 | minus: 1
+  assign default_qty = 1
+  assign max_qty = 1
+  assign valid_default = false
+  for i in (1..3)
+    assign key = 'op_tier' | append: i | append: '_qty'
+    assign q = settings[key] | plus: 0
+    if q > max_qty
+      assign max_qty = q
+    endif
+    if forloop.index0 == default_index and q > 0
+      assign default_qty = q
+      assign valid_default = true
+    endif
+  endfor
+  unless valid_default
+    assign default_index = 0
+    assign default_qty = settings.op_tier1_qty | plus: 0 | at_least: 1
+  endunless
+
+  assign color_option = null
+  assign color_name = settings.op_color_option_name | default: 'Color' | downcase | strip
+  assign color_idx = 0
+  for option in product.options_with_values
+    assign option_name = option.name | downcase | strip
+    if option_name == color_name
+      assign color_option = option
+      assign color_idx = option.position | minus: 1
+    endif
+  endfor
+-%}
+
+<op-bundle class="op-bundle" data-context="{{ context }}">
+  <script type="application/json" data-op-json>
+    {
+      "productId": {{ product.id }},
+      "productTitle": {{ product.title | json }},
+      "moneyFormat": {{ shop.money_format | json }},
+      "defaultTier": {{ default_index }},
+      "initialVariant": {{ variant.id }},
+      "showCompare": {{ settings.op_show_compare_at | json }},
+      "cartType": {{ settings.cart_type | json }},
+      "cartUrl": {{ routes.cart_url | json }},
+      "tiers": [
+        {%- assign first_tier = true -%}
+        {%- for i in (1..3) -%}
+          {%- liquid
+            assign k_qty = 'op_tier' | append: i | append: '_qty'
+            assign k_label = 'op_tier' | append: i | append: '_label'
+            assign k_badge = 'op_tier' | append: i | append: '_badge'
+            assign k_disc = 'op_tier' | append: i | append: '_discount'
+            assign q = settings[k_qty] | plus: 0
+            assign disc = 0
+            if i > 1
+              assign disc = settings[k_disc] | plus: 0 | at_least: 0
+            endif
+          -%}
+          {%- if q > 0 -%}
+            {%- unless first_tier %},{% endunless -%}
+            {%- assign first_tier = false -%}
+            {"index": {{ forloop.index0 }}, "qty": {{ q }}, "discount": {{ disc }}, "label": {{ settings[k_label] | json }}, "badge": {{ settings[k_badge] | json }}}
+          {%- endif -%}
+        {%- endfor -%}
+      ],
+      "variants": [
+        {%- for v in product.variants -%}
+          {%- liquid
+            assign v_name = v.title
+            if color_option
+              assign v_name = v.options[color_idx]
+            endif
+          -%}
+          {"id": {{ v.id }}, "name": {{ v_name | json }}, "price": {{ v.price }}, "compare": {{ v.compare_at_price | default: 0 }}, "available": {{ v.available | json }}}
+          {%- unless forloop.last %},{% endunless -%}
+        {%- endfor -%}
+      ],
+      "strings": {
+        "each": {{ settings.op_text_each | json }},
+        "save": {{ settings.op_text_save | json }},
+        "atc": {{ settings.op_text_atc | json }},
+        "soldOut": {{ settings.op_text_sold_out | json }},
+        "adding": {{ settings.op_text_adding | json }},
+        "error": {{ settings.op_text_error | json }}
+      }
+    }
+  </script>
+
+  <fieldset class="op-tiers">
+    <legend class="op-label">{{ settings.op_text_tiers_legend | escape }}</legend>
+    <div class="op-tiers__grid">
+      {%- for i in (1..3) -%}
+        {%- liquid
+          assign k_qty = 'op_tier' | append: i | append: '_qty'
+          assign k_label = 'op_tier' | append: i | append: '_label'
+          assign k_badge = 'op_tier' | append: i | append: '_badge'
+          assign k_disc = 'op_tier' | append: i | append: '_discount'
+          assign q = settings[k_qty] | plus: 0
+          assign disc = 0
+          if i > 1
+            assign disc = settings[k_disc] | plus: 0 | at_least: 0 | at_most: base
+          endif
+          assign unit = base | minus: disc
+          assign total = unit | times: q
+          assign save = disc | times: q
+          assign unit_money = unit | money
+          assign save_money = save | money
+        -%}
+        {%- if q > 0 -%}
+          <label
+            class="op-tier"
+            data-op-track="bundle_card"
+            data-op-tier="{{ i }}"
+            data-op-qty="{{ q }}"
+            data-op-context="{{ context }}"
+          >
+            <input
+              class="op-tier__input"
+              type="radio"
+              name="op-tier-{{ uid }}"
+              value="{{ forloop.index0 }}"
+              {% if forloop.index0 == default_index %}
+                checked
+              {% endif %}
+            >
+            {%- if settings[k_badge] != blank -%}
+              <span class="op-tier__badge">{{ settings[k_badge] | escape }}</span>
+            {%- endif -%}
+            <span class="op-tier__label">{{ settings[k_label] | escape }}</span>
+            <span class="op-tier__total" data-op-tier-total>{{ total | money }}</span>
+            <s class="op-tier__compare" data-op-tier-compare{% unless show_compare %} hidden{% endunless %}>
+              {%- if show_compare -%}{{ variant.compare_at_price | times: q | money }}{%- endif -%}
+            </s>
+            <span class="op-tier__each" data-op-tier-each>
+              {%- if q > 1 -%}
+                {{- settings.op_text_each | replace: '[price]', unit_money -}}
+              {%- endif -%}
+            </span>
+            <span class="op-tier__save" data-op-tier-save{% if save == 0 %} hidden{% endif %}>
+              {{- settings.op_text_save | replace: '[amount]', save_money -}}
+            </span>
+          </label>
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+  </fieldset>
+
+  {%- if product.has_only_default_variant == false -%}
+    <fieldset class="op-colors">
+      <legend class="op-label">
+        {{ settings.op_text_color | escape }}:
+        <span data-op-color-name>
+          {%- if color_option -%}
+            {{- variant.options[color_idx] | escape -}}
+          {%- else -%}
+            {{- variant.title | escape -}}
+          {%- endif -%}
+        </span>
+      </legend>
+      <div class="op-swatches">
+        {%- for v in product.variants -%}
+          {%- liquid
+            assign v_name = v.title
+            assign swatch = null
+            if color_option
+              assign v_name = v.options[color_idx]
+              for value in color_option.values
+                if value.name == v_name
+                  assign swatch = value.swatch
+                endif
+              endfor
+            endif
+          -%}
+          <label class="op-swatch" data-op-track="color" data-op-color="{{ v_name | escape }}">
+            <input
+              class="op-swatch__input"
+              type="radio"
+              name="op-color-{{ uid }}"
+              value="{{ v.id }}"
+              {% if v.id == variant.id %}
+                checked
+              {% endif %}
+              {% unless v.available %}
+                data-unavailable
+              {% endunless %}
+            >
+            {%- if swatch.color -%}
+              <span class="op-swatch__chip" style="background-color: {{ swatch.color }};"></span>
+              <span class="visually-hidden">{{ v_name | escape }}</span>
+            {%- elsif swatch.image -%}
+              <span class="op-swatch__chip">
+                {{- swatch.image | image_url: width: 96 | image_tag: loading: 'lazy', alt: '', width: 48, height: 48 -}}
+              </span>
+              <span class="visually-hidden">{{ v_name | escape }}</span>
+            {%- elsif v.featured_image -%}
+              <span class="op-swatch__chip">
+                {{- v.featured_image | image_url: width: 96, height: 96, crop: 'center' | image_tag: loading: 'lazy', alt: '', width: 48, height: 48 -}}
+              </span>
+              <span class="visually-hidden">{{ v_name | escape }}</span>
+            {%- else -%}
+              <span class="op-swatch__text">{{ v_name | escape }}</span>
+            {%- endif -%}
+          </label>
+        {%- endfor -%}
+      </div>
+
+      {%- if max_qty > 1 -%}
+        <div class="op-mix" data-op-mix{% if default_qty < 2 %} hidden{% endif %}>
+          <button
+            type="button"
+            class="op-mix__toggle link"
+            aria-expanded="false"
+            aria-controls="OpMix-{{ uid }}"
+            data-op-mix-toggle
+            data-op-track="mix_colors"
+          >
+            {{ settings.op_text_mix | escape }}
+          </button>
+          <div id="OpMix-{{ uid }}" class="op-mix__units" hidden>
+            {%- for n in (1..max_qty) -%}
+              <div class="op-mix__unit" data-op-unit="{{ forloop.index0 }}"{% if n > default_qty %} hidden{% endif %}>
+                <label for="OpUnit-{{ uid }}-{{ n }}">
+                  {{- settings.op_text_unit | replace: '[n]', n | escape -}}
+                </label>
+                <select id="OpUnit-{{ uid }}-{{ n }}" class="op-mix__select" data-op-unit-select>
+                  {%- for v in product.variants -%}
+                    {%- liquid
+                      assign v_name = v.title
+                      if color_option
+                        assign v_name = v.options[color_idx]
+                      endif
+                    -%}
+                    <option
+                      value="{{ v.id }}"
+                      {% if v.id == variant.id %}
+                        selected
+                      {% endif %}
+                      {% unless v.available %}
+                        disabled
+                      {% endunless %}
+                    >
+                      {{ v_name | escape }}
+                      {%- unless v.available %} — {{ settings.op_text_sold_out | escape }}{% endunless -%}
+                    </option>
+                  {%- endfor -%}
+                </select>
+              </div>
+            {%- endfor -%}
+          </div>
+        </div>
+      {%- endif -%}
+    </fieldset>
+  {%- endif -%}
+
+  {%- liquid
+    assign default_disc = 0
+    if default_index > 0
+      assign idx = default_index | plus: 1
+      assign k_disc = 'op_tier' | append: idx | append: '_discount'
+      assign default_disc = settings[k_disc] | plus: 0 | at_least: 0 | at_most: base
+    endif
+    assign default_total = base | minus: default_disc | times: default_qty
+  -%}
+  <button
+    type="button"
+    class="op-atc button button--full-width"
+    data-op-atc
+    data-op-track="add_to_cart"
+    data-op-context="{{ context }}"
+    {% unless variant.available %}
+      disabled
+    {% endunless %}
+  >
+    <span data-op-atc-text>
+      {%- if variant.available -%}
+        {{- settings.op_text_atc | escape -}}
+      {%- else -%}
+        {{- settings.op_text_sold_out | escape -}}
+      {%- endif -%}
+    </span>
+    <span class="op-atc__price" data-op-atc-price>{{ default_total | money }}</span>
+  </button>
+  <p class="op-error" role="alert" data-op-error hidden></p>
+
+  <noscript>
+    <form method="post" action="{{ routes.cart_add_url }}" class="op-noscript">
+      <input type="hidden" name="id" value="{{ variant.id }}">
+      <label for="OpQty-{{ uid }}">Qty</label>
+      <input id="OpQty-{{ uid }}" type="number" name="quantity" value="{{ default_qty }}" min="1">
+      <button type="submit" class="button">{{ settings.op_text_atc | escape }}</button>
+    </form>
+  </noscript>
+</op-bundle>

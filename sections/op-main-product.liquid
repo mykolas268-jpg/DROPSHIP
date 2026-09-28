@@ -1,0 +1,498 @@
+{% comment %}
+  One-product store: above-the-fold product section.
+  Gallery + blocks (title/price, rating, buy box, delivery estimate, trust row, text) + mobile sticky add-to-cart.
+  Works on the product template (uses `product`) and on the homepage (falls back to Theme settings → OP · Product & bundles → Store product).
+{% endcomment %}
+{%- liquid
+  assign op_product = product
+  if op_product == blank
+    assign op_product = section.settings.product | default: settings.op_product
+  endif
+-%}
+
+{{ 'op.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'op-core.js' | asset_url }}" defer="defer"></script>
+<script src="{{ 'op-bundle.js' | asset_url }}" defer="defer"></script>
+<script src="{{ 'op-media.js' | asset_url }}" defer="defer"></script>
+<script src="{{ 'op-delivery.js' | asset_url }}" defer="defer"></script>
+
+{%- if op_product == blank -%}
+  <div class="page-width op-empty">
+    <p>Select a product: Theme settings → OP · Product &amp; bundles → Store product.</p>
+  </div>
+{%- else -%}
+  <product-component
+    view-event-payload="{{ op_product | standard_event_data: 'view', context: 'page' | escape }}"
+  >
+    <section
+      id="OpMain-{{ section.id }}"
+      class="op-main color-{{ section.settings.color_scheme }} gradient"
+      style="--op-gallery-max-h: {{ section.settings.mobile_gallery_height }}svh; --op-gallery-ratio: {{ section.settings.gallery_ratio }};"
+    >
+      <div class="page-width op-main__grid">
+        <div class="op-main__media">
+          <op-gallery class="op-gallery">
+            <ul
+              class="op-gallery__track"
+              data-op-gallery-track
+              tabindex="0"
+              aria-label="{{ section.settings.gallery_label | escape }}"
+              role="region"
+            >
+              {%- assign first_video = true -%}
+              {%- for media in op_product.media -%}
+                <li class="op-gallery__slide" data-op-slide id="OpSlide-{{ section.id }}-{{ forloop.index }}">
+                  {%- case media.media_type -%}
+                    {%- when 'image' -%}
+                      {%- if forloop.first -%}
+                        {{
+                          media
+                          | image_url: width: 1500
+                          | image_tag:
+                            widths: '360, 450, 540, 720, 900, 1080, 1296, 1500',
+                            sizes: '(min-width: 990px) 50vw, 100vw',
+                            loading: 'eager',
+                            fetchpriority: 'high',
+                            preload: true,
+                            class: 'op-gallery__img',
+                            alt: media.alt
+                        }}
+                      {%- else -%}
+                        {{
+                          media
+                          | image_url: width: 1500
+                          | image_tag:
+                            widths: '360, 450, 540, 720, 900, 1080, 1296, 1500',
+                            sizes: '(min-width: 990px) 50vw, 100vw',
+                            loading: 'lazy',
+                            class: 'op-gallery__img',
+                            alt: media.alt
+                        }}
+                      {%- endif -%}
+                    {%- when 'video' -%}
+                      {%- liquid
+                        assign preload = 'none'
+                        if first_video
+                          assign preload = 'metadata'
+                          assign first_video = false
+                        endif
+                      -%}
+                      <div class="op-gallery__video" data-op-autoplay>
+                        {{
+                          media
+                          | video_tag:
+                            image_size: '1080x',
+                            autoplay: false,
+                            loop: true,
+                            muted: true,
+                            playsinline: true,
+                            controls: false,
+                            preload: preload,
+                            class: 'op-gallery__img'
+                        }}
+                      </div>
+                    {%- when 'external_video' -%}
+                      {{ media | external_video_tag: class: 'op-gallery__img', loading: 'lazy' }}
+                    {%- else -%}
+                      {{
+                        media.preview_image
+                        | image_url: width: 1080
+                        | image_tag: loading: 'lazy', class: 'op-gallery__img', alt: media.alt
+                      }}
+                  {%- endcase -%}
+                </li>
+              {%- else -%}
+                <li class="op-gallery__slide" data-op-slide>
+                  {{ 'product-1' | placeholder_svg_tag: 'op-gallery__img placeholder-svg' }}
+                </li>
+              {%- endfor -%}
+            </ul>
+            {%- if op_product.media.size > 1 -%}
+              <div class="op-gallery__dots">
+                {%- for media in op_product.media -%}
+                  <button
+                    type="button"
+                    class="op-gallery__dot"
+                    data-op-dot
+                    aria-controls="OpSlide-{{ section.id }}-{{ forloop.index }}"
+                    aria-label="{{ forloop.index }} / {{ forloop.length }}"
+                    {% if forloop.first %}
+                      aria-current="true"
+                    {% endif %}
+                  >
+                    <span></span>
+                  </button>
+                {%- endfor -%}
+              </div>
+            {%- endif -%}
+          </op-gallery>
+        </div>
+
+        <div class="op-main__info">
+          {%- for block in section.blocks -%}
+            {%- case block.type -%}
+              {%- when '@app' -%}
+                {% render block %}
+
+              {%- when 'title' -%}
+                <div class="op-title-row" {{ block.shopify_attributes }}>
+                  <h1 class="op-title {{ block.settings.heading_size }}">{{ op_product.title | escape }}</h1>
+                  {%- if block.settings.show_price -%}
+                    {% render 'op-price', product: op_product %}
+                  {%- endif -%}
+                </div>
+
+              {%- when 'price' -%}
+                <div class="op-price-block" {{ block.shopify_attributes }}>
+                  {% render 'op-price', product: op_product %}
+                </div>
+
+              {%- when 'rating' -%}
+                {%- assign rating_count = op_product.metafields.reviews.rating_count.value | default: 0 -%}
+                {%- if rating_count > 0 -%}
+                  {%- liquid
+                    assign rating = op_product.metafields.reviews.rating.value
+                    assign rating_pct = rating.rating | divided_by: rating.scale_max | times: 100
+                  -%}
+                  <a
+                    class="op-rating"
+                    href="#op-reviews"
+                    {{ block.shopify_attributes }}
+                    aria-label="{{ rating.rating | round: 1 }} / {{ rating.scale_max }} ({{ rating_count }})"
+                  >
+                    <span class="op-rating__stars" style="--op-rating: {{ rating_pct }}%;" aria-hidden="true"></span>
+                    <span class="op-rating__text">
+                      {{- rating.rating | round: 1 }}
+                      ·
+                      {{ block.settings.count_text | replace: '[count]', rating_count | escape -}}
+                    </span>
+                  </a>
+                {%- endif -%}
+
+              {%- when 'buy_box' -%}
+                <div class="op-buy" {{ block.shopify_attributes }}>
+                  {% render 'op-buy-box', product: op_product, context: 'main', section_id: section.id %}
+                </div>
+
+              {%- when 'delivery' -%}
+                {% render 'op-delivery', block: block %}
+
+              {%- when 'trust' -%}
+                <ul class="op-trust list-unstyled" {{ block.shopify_attributes }}>
+                  {%- for i in (1..3) -%}
+                    {%- liquid
+                      assign k_text = 'text_' | append: i
+                      assign k_icon = 'icon_' | append: i
+                    -%}
+                    {%- if block.settings[k_text] != blank -%}
+                      <li class="op-trust__item">
+                        {% render 'op-icon', icon: block.settings[k_icon], size: 22 %}
+                        <span>{{ block.settings[k_text] | escape }}</span>
+                      </li>
+                    {%- endif -%}
+                  {%- endfor -%}
+                </ul>
+
+              {%- when 'text' -%}
+                {%- if block.settings.text != blank -%}
+                  <div class="op-text rte" {{ block.shopify_attributes }}>{{ block.settings.text }}</div>
+                {%- endif -%}
+            {%- endcase -%}
+          {%- endfor -%}
+        </div>
+      </div>
+
+      {%- if section.settings.enable_sticky -%}
+        <op-sticky-atc
+          class="op-sticky color-{{ section.settings.sticky_color_scheme }}{% if section.settings.sticky_desktop %} op-sticky--desktop{% endif %}"
+          aria-hidden="true"
+          inert
+          data-op-track="sticky_bar"
+        >
+          <div class="op-sticky__inner">
+            <button
+              type="button"
+              class="op-sticky__info"
+              data-op-sticky-change
+              data-op-track="sticky_change"
+              aria-label="{{ section.settings.sticky_change_label | escape }}"
+            >
+              <span class="op-sticky__label" data-op-sticky-label></span>
+              <span class="op-sticky__price" data-op-sticky-price></span>
+            </button>
+            <button type="button" class="button op-sticky__atc" data-op-sticky-atc data-op-track="sticky_atc">
+              <span data-op-sticky-text>{{ settings.op_text_atc | escape }}</span>
+            </button>
+          </div>
+        </op-sticky-atc>
+      {%- endif -%}
+    </section>
+
+    <script type="application/ld+json">
+      {{ op_product | structured_data }}
+    </script>
+  </product-component>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "OP · Product",
+  "tag": "div",
+  "class": "section op-section-main",
+  "settings": [
+    {
+      "type": "product",
+      "id": "product",
+      "label": "Product",
+      "info": "Only used on the homepage. Product pages always show their own product."
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Gallery"
+    },
+    {
+      "type": "paragraph",
+      "content": "Order media in Shopify admin → Products. Put your best still image first (fastest load) and the UGC video second."
+    },
+    {
+      "type": "select",
+      "id": "gallery_ratio",
+      "label": "Image shape",
+      "default": "1",
+      "options": [
+        { "value": "1", "label": "Square" },
+        { "value": "0.8", "label": "Portrait 4:5" },
+        { "value": "1.25", "label": "Landscape 5:4" }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "mobile_gallery_height",
+      "label": "Max gallery height on phones (% of screen)",
+      "min": 30,
+      "max": 70,
+      "step": 1,
+      "unit": "%",
+      "default": 44,
+      "info": "Lower = more of the buy box visible without scrolling."
+    },
+    {
+      "type": "text",
+      "id": "gallery_label",
+      "label": "Gallery label (screen readers)",
+      "default": "Product photos and videos"
+    },
+    {
+      "type": "header",
+      "content": "Sticky add-to-cart bar"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_sticky",
+      "label": "Show sticky bar when the main button is off screen",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "sticky_desktop",
+      "label": "Also show on desktop",
+      "default": false
+    },
+    {
+      "type": "color_scheme",
+      "id": "sticky_color_scheme",
+      "label": "Sticky bar color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "text",
+      "id": "sticky_change_label",
+      "label": "Change pack label (screen readers)",
+      "default": "Change pack"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "@app"
+    },
+    {
+      "type": "title",
+      "name": "Title",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "select",
+          "id": "heading_size",
+          "label": "Size",
+          "default": "h2",
+          "options": [
+            { "value": "h3", "label": "Small" },
+            { "value": "h2", "label": "Medium" },
+            { "value": "h1", "label": "Large" }
+          ]
+        },
+        {
+          "type": "checkbox",
+          "id": "show_price",
+          "label": "Show single-mask price next to the title",
+          "default": true
+        }
+      ]
+    },
+    {
+      "type": "price",
+      "name": "Price",
+      "limit": 1
+    },
+    {
+      "type": "rating",
+      "name": "Star rating",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "Reads the product's reviews.rating / reviews.rating_count metafields (filled by Judge.me). Hidden automatically when there are 0 reviews."
+        },
+        {
+          "type": "text",
+          "id": "count_text",
+          "label": "Count text",
+          "default": "[count] reviews"
+        }
+      ]
+    },
+    {
+      "type": "buy_box",
+      "name": "Bundles + color + add to cart",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "Tiers, prices and button text: Theme settings → OP · Product & bundles."
+        }
+      ]
+    },
+    {
+      "type": "delivery",
+      "name": "Delivery estimate + event",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "Days, cutoff and event: Theme settings → OP · Delivery estimate."
+        },
+        {
+          "type": "checkbox",
+          "id": "show_event",
+          "label": "Show event banner",
+          "default": true
+        }
+      ]
+    },
+    {
+      "type": "trust",
+      "name": "Trust row",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "Only list what is true for your store. Empty lines are hidden."
+        },
+        {
+          "type": "select",
+          "id": "icon_1",
+          "label": "Icon 1",
+          "default": "lock",
+          "options": [
+            { "value": "lock", "label": "Lock" },
+            { "value": "shield", "label": "Shield" },
+            { "value": "truck", "label": "Truck" },
+            { "value": "return", "label": "Return" },
+            { "value": "mail", "label": "Mail" },
+            { "value": "clock", "label": "Clock" },
+            { "value": "check", "label": "Check" }
+          ]
+        },
+        {
+          "type": "text",
+          "id": "text_1",
+          "label": "Text 1",
+          "default": "Secure checkout"
+        },
+        {
+          "type": "select",
+          "id": "icon_2",
+          "label": "Icon 2",
+          "default": "shield",
+          "options": [
+            { "value": "lock", "label": "Lock" },
+            { "value": "shield", "label": "Shield" },
+            { "value": "truck", "label": "Truck" },
+            { "value": "return", "label": "Return" },
+            { "value": "mail", "label": "Mail" },
+            { "value": "clock", "label": "Clock" },
+            { "value": "check", "label": "Check" }
+          ]
+        },
+        {
+          "type": "text",
+          "id": "text_2",
+          "label": "Text 2",
+          "info": "Your guarantee in a few words, e.g. the return window from your refund policy."
+        },
+        {
+          "type": "select",
+          "id": "icon_3",
+          "label": "Icon 3",
+          "default": "truck",
+          "options": [
+            { "value": "lock", "label": "Lock" },
+            { "value": "shield", "label": "Shield" },
+            { "value": "truck", "label": "Truck" },
+            { "value": "return", "label": "Return" },
+            { "value": "mail", "label": "Mail" },
+            { "value": "clock", "label": "Clock" },
+            { "value": "check", "label": "Check" }
+          ]
+        },
+        {
+          "type": "text",
+          "id": "text_3",
+          "label": "Text 3",
+          "default": "Tracked shipping",
+          "info": "Remove if your shipping method is not tracked."
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "name": "Text",
+      "settings": [
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Text"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "OP · Product",
+      "blocks": [
+        { "type": "title" },
+        { "type": "rating" },
+        { "type": "buy_box" },
+        { "type": "delivery" },
+        { "type": "trust" }
+      ]
+    }
+  ]
+}
+{% endschema %}

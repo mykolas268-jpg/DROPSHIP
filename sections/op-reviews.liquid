@@ -1,0 +1,47 @@
+{% comment %}
+  Reviews wrapper for the Judge.me app block. The whole section is hidden while the product has 0 reviews
+  (reads the standard reviews.rating_count metafield that Judge.me keeps in sync).
+{% endcomment %}
+{{ 'op.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign op_product = product
+  if op_product == blank
+    assign op_product = settings.op_product
+  endif
+  assign review_count = op_product.metafields.reviews.rating_count.value | default: 0
+-%}
+{%- if review_count > 0 -%}
+  <section class="op-section op-reviews color-{{ section.settings.color_scheme }} gradient" id="op-reviews">
+    <div class="page-width">
+      {%- if section.settings.heading != blank -%}
+        <h2 class="op-section__heading h2">{{ section.settings.heading | escape }}</h2>
+      {%- endif -%}
+      {%- for block in section.blocks -%}
+        {%- case block.type -%}
+          {%- when '@app' -%}
+            {% render block %}
+        {%- endcase -%}
+      {%- endfor -%}
+    </div>
+  </section>
+{%- elsif request.design_mode -%}
+  <div class="page-width op-editor-note">
+    Reviews section is hidden: this product has 0 reviews. It appears automatically once Judge.me has a published review.
+    Add the Judge.me "Review widget" app block to this section.
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "OP · Reviews (Judge.me)",
+  "tag": "div",
+  "class": "section",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Real reviews" },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Color scheme", "default": "scheme-1" }
+  ],
+  "blocks": [{ "type": "@app" }],
+  "presets": [{ "name": "OP · Reviews (Judge.me)" }]
+}
+{% endschema %}

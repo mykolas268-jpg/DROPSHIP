@@ -1,103 +1,306 @@
 {
   "sections": {
     "main": {
-      "type": "main-product",
+      "type": "op-main-product",
+      "settings": {
+        "color_scheme": "scheme-1",
+        "gallery_ratio": "1",
+        "mobile_gallery_height": 44,
+        "gallery_label": "Product photos and videos",
+        "enable_sticky": true,
+        "sticky_desktop": false,
+        "sticky_color_scheme": "scheme-1",
+        "sticky_change_label": "Change pack"
+      },
       "blocks": {
-        "vendor": {
-          "type": "text",
+        "title_1": {
+          "type": "title",
+          "settings": {}
+        },
+        "rating_1": {
+          "type": "rating",
+          "settings": {}
+        },
+        "buy_box_1": {
+          "type": "buy_box",
+          "settings": {}
+        },
+        "delivery_1": {
+          "type": "delivery",
+          "settings": {}
+        },
+        "trust_1": {
+          "type": "trust",
+          "settings": {}
+        }
+      },
+      "block_order": [
+        "title_1",
+        "rating_1",
+        "buy_box_1",
+        "delivery_1",
+        "trust_1"
+      ]
+    },
+    "reactions": {
+      "type": "op-reactions",
+      "settings": {},
+      "blocks": {
+        "video_1": {
+          "type": "video",
+          "settings": {}
+        },
+        "video_2": {
+          "type": "video",
+          "settings": {}
+        },
+        "image_1": {
+          "type": "image",
+          "settings": {}
+        },
+        "image_2": {
+          "type": "image",
+          "settings": {}
+        }
+      },
+      "block_order": [
+        "video_1",
+        "video_2",
+        "image_1",
+        "image_2"
+      ]
+    },
+    "benefits": {
+      "type": "op-benefits",
+      "settings": {},
+      "blocks": {
+        "benefit_1": {
+          "type": "benefit",
           "settings": {
-            "text": "{{ product.vendor }}",
-            "text_style": "uppercase"
+            "icon": "laugh",
+            "title": "Built for double takes",
+            "text": "Walk in, wait two seconds, watch the room react."
           }
         },
-        "title": {
-          "type": "title"
-        },
-        "price": {
-          "type": "price"
-        },
-        "variant_picker": {
-          "type": "variant_picker",
+        "benefit_2": {
+          "type": "benefit",
           "settings": {
-            "picker_type": "button",
-            "swatch_shape": "circle"
+            "icon": "camera",
+            "title": "Made for the camera",
+            "text": "The kind of photo that ends up in the group chat for years."
           }
         },
-        "quantity_selector": {
-          "type": "quantity_selector"
-        },
-        "buy_buttons": {
-          "type": "buy_buttons",
+        "benefit_3": {
+          "type": "benefit",
           "settings": {
-            "show_dynamic_checkout": true,
-            "show_gift_card_recipient": true
+            "icon": "users",
+            "title": "Better as a pair",
+            "text": "One is funny. Two walking in together is a moment."
           }
         },
-        "description": {
-          "type": "description"
-        },
-        "share": {
-          "type": "share",
+        "benefit_4": {
+          "type": "benefit",
           "settings": {
-            "share_label": "Share"
+            "icon": "gift",
+            "title": "An easy gag gift",
+            "text": "For the friend who already owns everything."
           }
         }
       },
       "block_order": [
-        "vendor",
-        "title",
-        "price",
-        "variant_picker",
-        "quantity_selector",
-        "buy_buttons",
-        "description",
-        "share"
-      ],
-      "settings": {
-        "enable_sticky_info": true,
-        "color_scheme": "scheme-1",
-        "media_position": "left",
-        "gallery_layout": "stacked",
-        "media_size": "large",
-        "constrain_to_viewport": true,
-        "media_fit": "contain",
-        "image_zoom": "lightbox",
-        "mobile_thumbnails": "hide",
-        "hide_variants": true,
-        "enable_video_looping": false,
-        "padding_top": 36,
-        "padding_bottom": 12
-      }
+        "benefit_1",
+        "benefit_2",
+        "benefit_3",
+        "benefit_4"
+      ]
     },
-    "disclosures": {
-      "type": "disclosures",
-      "settings": {
-        "padding_top": 36,
-        "padding_bottom": 0
-      }
+    "use_cases": {
+      "type": "op-use-cases",
+      "settings": {},
+      "blocks": {
+        "card_1": {
+          "type": "card",
+          "settings": {
+            "icon": "mask",
+            "title": "Halloween",
+            "text": "A costume that takes ten seconds to put on."
+          }
+        },
+        "card_2": {
+          "type": "card",
+          "settings": {
+            "icon": "party",
+            "title": "Parties",
+            "text": "Instant icebreaker. Guaranteed photos."
+          }
+        },
+        "card_3": {
+          "type": "card",
+          "settings": {
+            "icon": "users",
+            "title": "Festivals",
+            "text": "Easy to spot your crew in a crowd."
+          }
+        },
+        "card_4": {
+          "type": "card",
+          "settings": {
+            "icon": "snow",
+            "title": "Ski trips",
+            "text": "A thin layer under your helmet or hood for the lift-line laughs."
+          }
+        },
+        "card_5": {
+          "type": "card",
+          "settings": {
+            "icon": "gift",
+            "title": "Gag gifts",
+            "text": "The present everyone remembers opening."
+          }
+        }
+      },
+      "block_order": [
+        "card_1",
+        "card_2",
+        "card_3",
+        "card_4",
+        "card_5"
+      ]
     },
-    "related-products": {
-      "type": "related-products",
-      "settings": {
-        "heading": "You may also like",
-        "heading_size": "h2",
-        "products_to_show": 4,
-        "columns_desktop": 4,
-        "color_scheme": "scheme-1",
-        "image_ratio": "square",
-        "image_shape": "default",
-        "show_secondary_image": true,
-        "show_vendor": false,
-        "show_rating": false,
-        "columns_mobile": "2",
-        "padding_top": 36,
-        "padding_bottom": 28
-      }
+    "specs": {
+      "type": "op-specs",
+      "settings": {},
+      "blocks": {
+        "row_1": {
+          "type": "row",
+          "settings": {
+            "label": "Material",
+            "value": ""
+          }
+        },
+        "row_2": {
+          "type": "row",
+          "settings": {
+            "label": "Weight / thickness",
+            "value": ""
+          }
+        },
+        "row_3": {
+          "type": "row",
+          "settings": {
+            "label": "Fit",
+            "value": "One size, adult unisex"
+          }
+        },
+        "row_4": {
+          "type": "row",
+          "settings": {
+            "label": "Head circumference",
+            "value": ""
+          }
+        },
+        "row_5": {
+          "type": "row",
+          "settings": {
+            "label": "Coverage",
+            "value": "Full face with ear shapes"
+          }
+        },
+        "row_6": {
+          "type": "row",
+          "settings": {
+            "label": "Openings",
+            "value": ""
+          }
+        },
+        "row_7": {
+          "type": "row",
+          "settings": {
+            "label": "Care",
+            "value": ""
+          }
+        }
+      },
+      "block_order": [
+        "row_1",
+        "row_2",
+        "row_3",
+        "row_4",
+        "row_5",
+        "row_6",
+        "row_7"
+      ]
+    },
+    "reviews": {
+      "type": "op-reviews",
+      "settings": {},
+      "blocks": {},
+      "block_order": []
+    },
+    "faq": {
+      "type": "op-faq",
+      "settings": {},
+      "blocks": {
+        "question_1": {
+          "type": "question",
+          "settings": {
+            "question": "How long does shipping take?"
+          }
+        },
+        "question_2": {
+          "type": "question",
+          "settings": {
+            "question": "Will it fit me?"
+          }
+        },
+        "question_3": {
+          "type": "question",
+          "settings": {
+            "question": "Is it warm?"
+          }
+        },
+        "question_4": {
+          "type": "question",
+          "settings": {
+            "question": "How do I wash it?"
+          }
+        },
+        "question_5": {
+          "type": "question",
+          "settings": {
+            "question": "What if I want to return it?"
+          }
+        },
+        "question_6": {
+          "type": "question",
+          "settings": {
+            "question": "Can I order different colors in one pack?",
+            "answer": "<p>Yes. Pick 2 or 4 masks, tap \"Pick a different color for each mask\" and choose a color for every mask. The pack discount applies to all of them.</p>"
+          }
+        }
+      },
+      "block_order": [
+        "question_1",
+        "question_2",
+        "question_3",
+        "question_4",
+        "question_5",
+        "question_6"
+      ]
+    },
+    "final_cta": {
+      "type": "op-final-cta",
+      "settings": {}
     }
   },
   "order": [
     "main",
-    "disclosures",
-    "related-products"
+    "reactions",
+    "benefits",
+    "use_cases",
+    "specs",
+    "reviews",
+    "faq",
+    "final_cta"
   ]
 }

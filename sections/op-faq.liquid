@@ -1,0 +1,71 @@
+{% comment %}
+  FAQ accordion (native <details>/<summary>: keyboard and screen-reader accessible without JS).
+  Questions without an answer are hidden.
+{% endcomment %}
+{{ 'op.css' | asset_url | stylesheet_tag }}
+
+<section class="op-section op-faq color-{{ section.settings.color_scheme }} gradient" id="op-faq">
+  <div class="page-width op-faq__inner">
+    {%- if section.settings.heading != blank -%}
+      <h2 class="op-section__heading h2">{{ section.settings.heading | escape }}</h2>
+    {%- endif -%}
+    <div class="op-faq__list">
+      {%- for block in section.blocks -%}
+        {%- if block.settings.answer != blank -%}
+          <details class="op-faq__item" {{ block.shopify_attributes }} data-op-track="faq" data-op-faq="{{ block.settings.question | handle }}">
+            <summary class="op-faq__q">
+              <span>{{ block.settings.question | escape }}</span>
+              {% render 'op-icon', icon: 'chevron', size: 20 %}
+            </summary>
+            <div class="op-faq__a rte">{{ block.settings.answer }}</div>
+          </details>
+        {%- elsif request.design_mode -%}
+          <p class="op-editor-note" {{ block.shopify_attributes }}>
+            Hidden until answered: {{ block.settings.question | escape }}
+          </p>
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "OP · FAQ",
+  "tag": "div",
+  "class": "section",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Questions" },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Color scheme", "default": "scheme-1" }
+  ],
+  "blocks": [
+    {
+      "type": "question",
+      "name": "Question",
+      "settings": [
+        { "type": "text", "id": "question", "label": "Question", "default": "Question" },
+        { "type": "richtext", "id": "answer", "label": "Answer", "info": "Leave empty to hide. Answer only from your product facts and policies." }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "OP · FAQ",
+      "blocks": [
+        { "type": "question", "settings": { "question": "How long does shipping take?" } },
+        { "type": "question", "settings": { "question": "Will it fit me?" } },
+        { "type": "question", "settings": { "question": "Is it warm?" } },
+        { "type": "question", "settings": { "question": "How do I wash it?" } },
+        { "type": "question", "settings": { "question": "What if I want to return it?" } },
+        {
+          "type": "question",
+          "settings": {
+            "question": "Can I order different colors in one pack?",
+            "answer": "<p>Yes. Pick 2 or 4 masks, tap \"Pick a different color for each mask\" and choose a color for every mask. The pack discount applies to all of them.</p>"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

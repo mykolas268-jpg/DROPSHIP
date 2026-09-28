@@ -1,0 +1,14 @@
+{% comment %}
+  Single-mask price. Compare-at is only shown when explicitly enabled in theme settings
+  AND the variant has a real compare-at price above the price.
+
+  Usage: {% render 'op-price', product: product %}
+{% endcomment %}
+{%- assign v = product.selected_or_first_available_variant -%}
+<p class="op-price">
+  <span class="op-price__now">{{ v.price | money }}</span>
+  {%- if settings.op_show_compare_at and v.compare_at_price > v.price -%}
+    <span class="visually-hidden">{{ 'products.product.price.regular_price' | t }}</span>
+    <s class="op-price__was">{{ v.compare_at_price | money }}</s>
+  {%- endif -%}
+</p>
