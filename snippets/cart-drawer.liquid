@@ -90,6 +90,7 @@
         >
           <div id="CartDrawer-CartItems" class="drawer__contents js-contents">
             {%- if cart != empty -%}
+              {%- render 'op-cart-extras', part: 'upgrade' -%}
               <div class="drawer__cart-items-wrapper">
                 <table class="cart-items" role="table">
                   <thead role="rowgroup">
@@ -479,7 +480,7 @@
                   </tbody>
                 </table>
               </div>
-              {%- render 'op-cart-extras', part: 'offers' -%}
+              {%- render 'op-cart-extras', part: 'upsell' -%}
             {%- endif -%}
             <p id="CartDrawer-LiveRegionText" class="visually-hidden" role="status"></p>
             <p id="CartDrawer-LineItemStatus" class="visually-hidden" aria-hidden="true" role="status">

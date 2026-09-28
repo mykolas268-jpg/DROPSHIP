@@ -3,7 +3,7 @@
   re-render with the drawer after every cart change and always reflect Shopify's real cart numbers.
 
   Accepts:
-  - part: 'shipping' | 'offers' | 'savings' | 'checkout'
+  - part: 'shipping' | 'upgrade' | 'upsell' | 'offers' (both) | 'savings' | 'checkout'
 
   Usage: {% render 'op-cart-extras', part: 'shipping' %}
 {% endcomment %}
@@ -37,7 +37,7 @@
       </div>
     {%- endif -%}
 
-  {%- when 'offers' -%}
+  {%- when 'upgrade', 'upsell', 'offers' -%}
     {%- liquid
       assign mask = settings.op_product
       assign mask_qty = 0
@@ -56,7 +56,7 @@
       endfor
       assign target_qty = settings.op_tier2_qty | plus: 0
     -%}
-    {%- if settings.op_show_upgrade and mask_qty == 1 and target_qty > 1 and mask_item.variant.available -%}
+    {%- if part != 'upsell' and settings.op_show_upgrade and mask_qty == 1 and target_qty > 1 and mask_item.variant.available -%}
       {%- liquid
         assign unit = mask_item.original_price
         assign disc = settings.op_tier2_discount | plus: 0 | at_least: 0 | at_most: unit
@@ -90,7 +90,7 @@
     {%- endif -%}
 
     {%- assign upsell = settings.op_upsell_product -%}
-    {%- if upsell and upsell.available and upsell_in_cart == false and cart != empty -%}
+    {%- if part != 'upgrade' and upsell and upsell.available and upsell_in_cart == false and cart != empty -%}
       {%- assign upsell_variant = upsell.selected_or_first_available_variant -%}
       <div class="op-upsell">
         <p class="op-upsell__heading">{{ settings.op_text_upsell_heading | escape }}</p>
